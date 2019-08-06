@@ -107,3 +107,4 @@ venv.bak/
 .idea/
 logs
 test.py
+db_connect.py
