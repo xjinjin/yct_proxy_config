@@ -21,30 +21,39 @@ from handle_data.tasks import handel_parameter, filter_step
 import random
 
 import recorder
-logger=recorder.get_log().config_log('./logs/request.log')
+
+logger = recorder.get_log().config_log('./logs/request.log')
 
 import redis
 from handle_data.celery_config import *
-redis_pool = redis.ConnectionPool(host=REDIS_HOST, db=9,port=REDIS_PORT, decode_responses=True)
+
+redis_pool = redis.ConnectionPool(host=REDIS_HOST, db=9, port=REDIS_PORT, decode_responses=True)
 r = redis.Redis(connection_pool=redis_pool)
 
 from handle_data.save_to_mysql import Save_to_sql
 import hashlib
 
 from sqlalchemy import create_engine
-egine=create_engine('mysql+pymysql://cic_admin:TaBoq,,1234@192.168.1.170/yct_proxy?charset=utf8')
+
+egine = create_engine('mysql+pymysql://cic_admin:TaBoq,,1234@192.168.1.170/yct_proxy?charset=utf8')
 ##############################
 
-filter_info={'http_connect':['sh.gov.cn']}
+filter_info = {'http_connect': ['sh.gov.cn']}
+
+
 class classification_deal:
     '''定义一个基类通过配置处理消息'''
-    def filter_deal(self,flow):
+
+    def filter_deal(self, flow):
         pass
-    def other_dealdatabag(self,flow):
+
+    def other_dealdatabag(self, flow):
         pass
-    def yct_dealdatabag(self,flow):
+
+    def yct_dealdatabag(self, flow):
         pass
-    def run_celery(self,data):
+
+    def run_celery(self, data):
         pass
 
 
@@ -58,6 +67,7 @@ class Proxy(classification_deal):
             HTTP handler events. CONNECT requests are only valid in regular and
             upstream proxy modes.
         """
+
     def requestheaders(self, flow: mitmproxy.http.HTTPFlow):
         """
             HTTP request headers were successfully read. At this point, the body
@@ -73,7 +83,7 @@ class Proxy(classification_deal):
         '''获取请求详细信息'''
         if not r.get('request'):
             res_request = egine.execute('select request from yct_config').fetchone()[0]
-            r.set('request', res_request, ex=60*10)
+            r.set('request', res_request, ex=60 * 10)
         res_request = r.get('request')
         exec(res_request)
         # ####################################
@@ -178,14 +188,53 @@ class Proxy(classification_deal):
         #        data_dict = self.yct_dealdatabag(flow)
         #        break
         #    else:
+
+        if not r.get('response'):
+            res_response = egine.execute('select response from yct_config').fetchone()[0]
+            r.set('response', res_response, ex=60 * 10)
+        res_response = r.get('response')
+        exec(res_response)
+        # ####################################
+        # request = flow.request
+        # to_server = flow.request.url
+        # ###########start analysis###########
+        # '''1.排除无用的url请求'''
+        # '''
+        # valid_host = ['yct.sh.gov.cn','amr-wsdj.qingdao.gov.cn','218.57.139.25']
+        # '''
+        # if not r.get('valid_host'):
+        #     res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
+        #     r.set('valid_host',res_valid_host,ex=60*10)
+        # res_valid_host = r.get('valid_host')
+        # valid_host = eval(res_valid_host)
+        # if flow.request.host not in valid_host:
+        #     return
+        # # 过滤 js,css,png,gif,jpg 的数据
+        # for end_name in ['.js', '.css', '.png', '.jpg', '.gif', '.ico']:
+        #     if end_name in to_server:
+        #         return
+        # ####################################
+        # '''2.初始数据，非urlencode或json格式的数据则置空'''
+        # parameters_dict = {}
+        # try:
+        #     request_form = request.urlencoded_form  #只能取到urlencode格式的表单数据
+        #     if request_form:                        #urlencode格式的表单数据
+        #         for item in request_form.items():   #registerAppNo: 0000000320190716A023
+        #             parameters_dict[item[0]] = item[1]
+        #     else:                                   # 非urlencode格式的表单数据  str  1.urlencode   2.json
+        #         json_data = request.text
+        #         parameters_dict = json.loads(json_data)
+        # except Exception as e:
+        #     parameters_dict = {}
+        # if not parameters_dict:
+        #     return
+
         data_dict = self.other_dealdatabag(flow)
-        #        break
         pickled = pickle.dumps(data_dict)
         data_str = str(pickled)
-
         self.run_celery(data_str)
 
-    def other_dealdatabag(self,flow):
+    def other_dealdatabag(self, flow):
         data_bag = {}
         # data_bag['client_address'] = flow.client_conn.address
         data_bag['request'] = flow.request
@@ -196,7 +245,7 @@ class Proxy(classification_deal):
         data_bag['response'] = flow.response
         return data_bag
 
-    def yct_dealdatabag(self,flow):
+    def yct_dealdatabag(self, flow):
         data_bag = {}
         # data_bag['client_address'] = flow.client_conn.address
         data_bag['request'] = flow.request
@@ -208,16 +257,14 @@ class Proxy(classification_deal):
         # print(data_bag)
         return data_bag
 
-
-    def run_celery(self,data_str):
-        #这个地方调用任务to_product
+    def run_celery(self, data_str):
+        # 这个地方调用任务to_product
         handle_data(data_str)
         # folder=open(r'D:\data_bag_pickle\{}.pkl'.format(time.time()),mode='wb')
         # pickle.dump(data_bag,folder)
         # folder.close()
 
         # print(res)
-
 
     def error(self, flow: mitmproxy.http.HTTPFlow):
         """
