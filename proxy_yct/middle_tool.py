@@ -25,11 +25,12 @@ logger=recorder.get_log().config_log('./logs/request.log')
 
 import redis
 from handle_data.celery_config import *
-redis_pool = redis.ConnectionPool(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+redis_pool = redis.ConnectionPool(host=REDIS_HOST, db=9,port=REDIS_PORT, decode_responses=True)
 r = redis.Redis(connection_pool=redis_pool)
 
 from handle_data.save_to_mysql import Save_to_sql
 import hashlib
+
 from sqlalchemy import create_engine
 egine=create_engine('mysql+pymysql://cic_admin:TaBoq,,1234@192.168.1.170/yct_proxy?charset=utf8')
 ##############################
@@ -70,8 +71,11 @@ class Proxy(classification_deal):
         """
         # request_header=eval(dict(flow.request.headers)['request_header'])
         '''获取请求详细信息'''
-        res = egine.execute('select request from yct_config').fetchone()[0]
-        exec(res)
+        if not r.get('request'):
+            res_request = egine.execute('select request from yct_config').fetchone()[0]
+            r.set('request', res_request, ex=60*10)
+        res_request = r.get('request')
+        exec(res_request)
         # ####################################
         # request = flow.request
         # to_server = flow.request.url
@@ -89,9 +93,12 @@ class Proxy(classification_deal):
         # http://yct.sh.gov.cn/portal_yct/
         # valid_host = ['yct.sh.gov.cn','amr-wsdj.qingdao.gov.cn','218.57.139.25']
         # '''
-        # res = egine.execute('select valid_host from yct_config').fetchone()[0]
+        # if not r.get('valid_host'):
+        #     res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
+        #     r.set('valid_host',res_valid_host,ex=60*10)
+        # res_valid_host = r.get('valid_host')
         # # valid_host 入库动态加载
-        # valid_host = eval(res)
+        # valid_host = eval(res_valid_host)
         # if flow.request.host not in valid_host:
         #     return
         # # 过滤 js,css,png,gif,jpg 的数据
