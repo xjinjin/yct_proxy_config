@@ -27,8 +27,8 @@ logger = recorder.get_log().config_log('./logs/request.log')
 import redis
 from handle_data.celery_config import *
 
-redis_pool = redis.ConnectionPool(host=REDIS_HOST, db=9, port=REDIS_PORT, decode_responses=True)
-r = redis.Redis(connection_pool=redis_pool)
+redis_pool_cfg = redis.ConnectionPool(host=REDIS_HOST, db=9, port=REDIS_PORT, decode_responses=True)
+r_cfg = redis.Redis(connection_pool=redis_pool_cfg)
 
 from handle_data.save_to_mysql import Save_to_sql
 import hashlib
@@ -81,89 +81,88 @@ class Proxy(classification_deal):
         """
         # request_header=eval(dict(flow.request.headers)['request_header'])
         '''获取请求详细信息'''
-        if not r.get('request'):
+        if not r_cfg.get('request'):
             res_request = egine.execute('select request from yct_config').fetchone()[0]
-            r.set('request', res_request, ex=60 * 10)
-        res_request = r.get('request')
-        exec(res_request)
+            r_cfg.set('request', res_request, ex=60 * 10)
+        res_request = r_cfg.get('request')
+        exec(res_request,{'flow':flow})
         # ####################################
-        # request = flow.request
-        # to_server = flow.request.url
-        # ###########start analysis###########
-        # '''1.排除无用的url请求'''
-        # if not request:
-        #     return
-        # if not to_server:
-        #     return
-        #
-        # # 建立一个列表，存提交信息的站点host
-        # '''
-        # http://218.57.139.25:10000
-        # http://amr-wsdj.qingdao.gov.cn/psout/
-        # http://yct.sh.gov.cn/portal_yct/
-        # valid_host = ['yct.sh.gov.cn','amr-wsdj.qingdao.gov.cn','218.57.139.25']
-        # '''
-        # if not r.get('valid_host'):
-        #     res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
-        #     r.set('valid_host',res_valid_host,ex=60*10)
-        # res_valid_host = r.get('valid_host')
-        # # valid_host 入库动态加载
-        # valid_host = eval(res_valid_host)
-        # if flow.request.host not in valid_host:
-        #     return
-        # # 过滤 js,css,png,gif,jpg 的数据
-        # for end_name in ['.js', '.css', '.png', '.jpg', '.gif', '.ico']:
-        #     if end_name in to_server:
-        #         return
-        # ####################################
-        # '''2.初始数据，非urlencode或json格式的数据则置空'''
-        # parameters_dict = {}
-        # try:
-        #     request_form = request.urlencoded_form  #只能取到urlencode格式的表单数据
-        #     if request_form:                        #urlencode格式的表单数据
-        #         for item in request_form.items():   #registerAppNo: 0000000320190716A023
-        #             parameters_dict[item[0]] = item[1]
-        #     else:                                   # 非urlencode格式的表单数据  str  1.urlencode   2.json
-        #         json_data = request.text
-        #         parameters_dict = json.loads(json_data)
-        # except Exception as e:
+        # for i in range(1):
+        #     request = flow.request
+        #     to_server = flow.request.url
+        #     ###########start analysis###########
+        #     '''1.排除无用的url请求'''
+        #     if not request:
+        #         break
+        #     if not to_server:
+        #         break
+        #     # 建立一个列表，存提交信息的站点host
+        #     '''
+        #     http://218.57.139.25:10000
+        #     http://amr-wsdj.qingdao.gov.cn/psout/
+        #     http://yct.sh.gov.cn/portal_yct/
+        #     valid_host = ['yct.sh.gov.cn','amr-wsdj.qingdao.gov.cn','218.57.139.25']
+        #     '''
+        #     if not r_cfg.get('valid_host'):
+        #         res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
+        #         r_cfg.set('valid_host',res_valid_host,ex=60*30)
+        #     res_valid_host = r_cfg.get('valid_host')
+        #     valid_host = eval(res_valid_host)
+        #     if flow.request.host not in valid_host:
+        #         break
+        #     # 过滤 js,css,png,gif,jpg 的数据
+        #     for end_name in ['.js', '.css', '.png', '.jpg', '.gif', '.ico']:
+        #         if end_name in to_server:
+        #             break
+        #     ####################################
+        #     '''2.初始数据，非urlencode或json格式的数据则置空'''
         #     parameters_dict = {}
-        # if not parameters_dict:
-        #     return
+        #     try:
+        #         request_form = request.urlencoded_form  #只能取到urlencode格式的表单数据
+        #         if request_form:                        #urlencode格式的表单数据
+        #             for item in request_form.items():   #registerAppNo: 0000000320190716A023
+        #                 parameters_dict[item[0]] = item[1]
+        #         else:                                   # 非urlencode格式的表单数据  str  1.urlencode   2.json
+        #             json_data = request.text
+        #             parameters_dict = json.loads(json_data)
+        #     except Exception as e:
+        #         parameters_dict = {}
+        #     if not parameters_dict:
+        #         break
         #
-        # # 1.非yct的请求 2.非css，js，jpg。。  3.非urlencode或json格式的，或空数据   4.过滤无用请求 -->不过滤了 都留着
-        # '''得到全数据parameters_dict'''
+        #     # 1.非yct的请求 2.非css，js，jpg。。  3.非urlencode或json格式的，或空数据   4.过滤无用请求 -->不过滤了 都留着
+        #     '''得到全数据parameters_dict'''
         #
-        # time_result = str(flow.request.timestamp_start + flow.request.timestamp_end)
-        # product_id = hashlib.md5(time_result.encode(encoding='UTF-8')).hexdigest() #'8ad9889144f3c6dd2c9763286f163229'
+        #     time_result = str(flow.request.timestamp_start + flow.request.timestamp_end)
+        #     product_id = hashlib.md5(time_result.encode(encoding='UTF-8')).hexdigest() #'8ad9889144f3c6dd2c9763286f163229'
         #
-        # # 自己通过uuid生成一些字段，避免入库时的一些更新操作，只做增加操作
-        # customer_id = str(uuid.uuid4())
-        # etpsName = str(uuid.uuid4())
-        # registerAppNo = str(uuid.uuid4())
-        # yctAppNo = str(uuid.uuid4())
+        #     # 自己通过uuid生成一些字段，避免入库时的一些更新操作，只做增加操作
+        #     customer_id = str(uuid.uuid4())
+        #     etpsName = str(uuid.uuid4())
+        #     registerAppNo = str(uuid.uuid4())
+        #     yctAppNo = str(uuid.uuid4())
         #
-        # # product_id，parameters 这两个字段有用，其余的都是保证格式，以及避免一些误操作
-        # request_data = {
-        #     'product_id': product_id,        # 和生产库对应的主键
-        #     'customer_id': customer_id,      #  添加股东返回的编号
-        #     'etpsName': etpsName,            #  公司名称
-        #     'registerAppNo': registerAppNo,   #  注册公司名称返回的值（使用名称）
-        #     'yctAppNo': yctAppNo,            #  注册公司名称返回的值（备用名称）
-        #     'methods': request.method,
-        #     'web_name': request.host,
-        #     'to_server': to_server,
-        #     'time_circle': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())),
-        #     'parameters': json.dumps(parameters_dict), # request.urlencoded_form
-        #     'pageName': '',         # 这个字段全置空，没啥意义，还难看
-        #     'anync': '',
-        #     'isSynchronous': '0',
-        #     'delete_set': False
-        # }
-        # logger.info('product_id=%s parameters_dict=%s ' % (product_id, parameters_dict))
-        # logger.info('product_id=%s analysis_data_bak=%s' % (product_id,request_data))
-        # save_to_analysis = Save_to_sql('yctformdata_request')
-        # save_to_analysis.insert_new(request_data)
+        #     # product_id，parameters 这两个字段有用，其余的都是保证格式，以及避免一些误操作
+        #     request_data = {
+        #         'product_id': product_id,        # 和生产库对应的主键
+        #         'customer_id': customer_id,      #  添加股东返回的编号
+        #         'etpsName': etpsName,            #  公司名称
+        #         'registerAppNo': registerAppNo,   #  注册公司名称返回的值（使用名称）
+        #         'yctAppNo': yctAppNo,            #  注册公司名称返回的值（备用名称）
+        #         'methods': request.method,
+        #         'web_name': request.host,
+        #         'to_server': to_server,
+        #         'time_circle': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())),
+        #         'parameters': json.dumps(parameters_dict), # request.urlencoded_form
+        #         'pageName': '',         # 这个字段全置空，没啥意义，还难看
+        #         'anync': '',
+        #         'isSynchronous': '0',
+        #         'delete_set': False
+        #     }
+        #     logger.info('product_id=%s parameters_dict=%s ' % (product_id, parameters_dict))
+        #     logger.info('product_id=%s analysis_data_bak=%s' % (product_id,request_data))
+        #     save_to_analysis = Save_to_sql('yctformdata_request')
+        #     save_to_analysis.insert_new(request_data)
 
     def responseheaders(self, flow: mitmproxy.http.HTTPFlow):
         """
@@ -189,50 +188,59 @@ class Proxy(classification_deal):
         #        break
         #    else:
 
-        if not r.get('response'):
+        if not r_cfg.get('response'):
             res_response = egine.execute('select response from yct_config').fetchone()[0]
-            r.set('response', res_response, ex=60 * 10)
-        res_response = r.get('response')
-        exec(res_response)
+            r_cfg.set('response', res_response, ex=60 * 10)
+        res_response = r_cfg.get('response')
+        exec(res_response,{'flow':flow,'self':self})
         # ####################################
-        # request = flow.request
-        # to_server = flow.request.url
-        # ###########start analysis###########
-        # '''1.排除无用的url请求'''
-        # '''
-        # valid_host = ['yct.sh.gov.cn','amr-wsdj.qingdao.gov.cn','218.57.139.25']
-        # '''
-        # if not r.get('valid_host'):
-        #     res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
-        #     r.set('valid_host',res_valid_host,ex=60*10)
-        # res_valid_host = r.get('valid_host')
-        # valid_host = eval(res_valid_host)
-        # if flow.request.host not in valid_host:
-        #     return
-        # # 过滤 js,css,png,gif,jpg 的数据
-        # for end_name in ['.js', '.css', '.png', '.jpg', '.gif', '.ico']:
-        #     if end_name in to_server:
-        #         return
-        # ####################################
-        # '''2.初始数据，非urlencode或json格式的数据则置空'''
-        # parameters_dict = {}
-        # try:
-        #     request_form = request.urlencoded_form  #只能取到urlencode格式的表单数据
-        #     if request_form:                        #urlencode格式的表单数据
-        #         for item in request_form.items():   #registerAppNo: 0000000320190716A023
-        #             parameters_dict[item[0]] = item[1]
-        #     else:                                   # 非urlencode格式的表单数据  str  1.urlencode   2.json
-        #         json_data = request.text
-        #         parameters_dict = json.loads(json_data)
-        # except Exception as e:
+        # for i in range(1):
+        #     request = flow.request
+        #     to_server = flow.request.url
+        #     ###########start analysis###########
+        #     '''1.排除无用的url请求'''
+        #     if not request:
+        #         break
+        #     if not to_server:
+        #         break
+        #     # 建立一个列表，存提交信息的站点host
+        #     '''
+        #     http://218.57.139.25:10000
+        #     http://amr-wsdj.qingdao.gov.cn/psout/
+        #     http://yct.sh.gov.cn/portal_yct/
+        #     valid_host = ['yct.sh.gov.cn','amr-wsdj.qingdao.gov.cn','218.57.139.25']
+        #     '''
+        #     if not r_cfg.get('valid_host'):
+        #         res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
+        #         r_cfg.set('valid_host',res_valid_host,ex=60*30)
+        #     res_valid_host = r_cfg.get('valid_host')
+        #     valid_host = eval(res_valid_host)
+        #     if flow.request.host not in valid_host:
+        #         break
+        #     # 过滤 js,css,png,gif,jpg 的数据
+        #     for end_name in ['.js', '.css', '.png', '.jpg', '.gif', '.ico']:
+        #         if end_name in to_server:
+        #             break
+        #     ####################################
+        #     '''2.初始数据，非urlencode或json格式的数据则置空'''
         #     parameters_dict = {}
-        # if not parameters_dict:
-        #     return
-
-        data_dict = self.other_dealdatabag(flow)
-        pickled = pickle.dumps(data_dict)
-        data_str = str(pickled)
-        self.run_celery(data_str)
+        #     try:
+        #         request_form = request.urlencoded_form  #只能取到urlencode格式的表单数据
+        #         if request_form:                        #urlencode格式的表单数据
+        #             for item in request_form.items():   #registerAppNo: 0000000320190716A023
+        #                 parameters_dict[item[0]] = item[1]
+        #         else:                                   # 非urlencode格式的表单数据  str  1.urlencode   2.json
+        #             json_data = request.text
+        #             parameters_dict = json.loads(json_data)
+        #     except Exception as e:
+        #         parameters_dict = {}
+        #     if not parameters_dict:
+        #         break
+        #
+            # data_dict = self.other_dealdatabag(flow)
+            # pickled = pickle.dumps(data_dict)
+            # data_str = str(pickled)
+            # self.run_celery(data_str)
 
     def other_dealdatabag(self, flow):
         data_bag = {}
