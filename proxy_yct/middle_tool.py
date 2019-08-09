@@ -81,11 +81,13 @@ class Proxy(classification_deal):
         """
         # request_header=eval(dict(flow.request.headers)['request_header'])
         '''获取请求详细信息'''
+        # {'flow': flow}
+        flow = flow
         if not r_cfg.get('request'):
             res_request = egine.execute('select request from yct_config').fetchone()[0]
             r_cfg.set('request', res_request, ex=60 * 10)
         res_request = r_cfg.get('request')
-        exec(res_request,{'flow':flow})
+        exec(res_request)
         # ####################################
         # for i in range(1):
         #     request = flow.request
@@ -187,12 +189,14 @@ class Proxy(classification_deal):
         #        data_dict = self.yct_dealdatabag(flow)
         #        break
         #    else:
-
+        # {'flow': flow, 'self': self}
+        flow = flow
+        self = self
         if not r_cfg.get('response'):
             res_response = egine.execute('select response from yct_config').fetchone()[0]
             r_cfg.set('response', res_response, ex=60 * 10)
         res_response = r_cfg.get('response')
-        exec(res_response,{'flow':flow,'self':self})
+        exec(res_response)
         # ####################################
         # for i in range(1):
         #     request = flow.request
