@@ -15,6 +15,7 @@ import pickle
 import time
 import uuid
 from handle_data.main import handle_data
+import pymysql
 
 ##############################
 from handle_data.tasks import handel_parameter, filter_step
@@ -84,10 +85,26 @@ class Proxy(classification_deal):
         # {'flow': flow}
         flow = flow
         if not r_cfg.get('request'):
-            res_request = egine.execute('select request from yct_config').fetchone()[0]
-            r_cfg.set('request', res_request, ex=60 * 10)
+            # try:
+            #     # res_request = egine.execute('select request from yct_config').fetchone()[0]
+            #     cur = egine.execute('select request from yct_config')
+            #     res_request = cur.fetchone()[0]
+            # except Exception as e:
+            #     # res_request = egine.execute('select request from yct_config').fetchone()[0]
+            #     cur = egine.execute('select request from yct_config')
+            #     res_request = cur.fetchone()[0]
+            conn = pymysql.connect(host='192.168.1.170', user='cic_admin', password='TaBoq,,1234', database='yct_proxy',
+                                   charset='utf8')
+            cursor = conn.cursor()
+            sql = 'select request from yct_config'
+            cursor.execute(sql)
+            res_request = cursor.fetchone()[0]
+            cursor.close()
+            conn.close()
+            r_cfg.set('request', res_request, ex=60 * 30)
         res_request = r_cfg.get('request')
         exec(res_request)
+
         # ####################################
         # for i in range(1):
         #     request = flow.request
@@ -106,8 +123,24 @@ class Proxy(classification_deal):
         #     valid_host = ['yct.sh.gov.cn','amr-wsdj.qingdao.gov.cn','218.57.139.25']
         #     '''
         #     if not r_cfg.get('valid_host'):
-        #         res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
-        #         r_cfg.set('valid_host',res_valid_host,ex=60*30)
+        #         # try:
+        #         #     # res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
+        #         #     cur = egine.execute('select valid_host from yct_config')
+        #         #     res_valid_host = cur.fetchone()[0]
+        #         # except Exception as e:
+        #         #     # res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
+        #         #     cur = egine.execute('select valid_host from yct_config')
+        #         #     res_valid_host = cur.fetchone()[0]
+        #         conn = pymysql.connect(host='192.168.1.170', user='cic_admin', password='TaBoq,,1234',
+        #                                database='yct_proxy',
+        #                                charset='utf8')
+        #         cursor = conn.cursor()
+        #         sql = 'select valid_host from yct_config'
+        #         cursor.execute(sql)
+        #         res_valid_host = cursor.fetchone()[0]
+        #         cursor.close()
+        #         conn.close()
+        #         r_cfg.set('valid_host',res_valid_host,ex=60 * 30)
         #     res_valid_host = r_cfg.get('valid_host')
         #     valid_host = eval(res_valid_host)
         #     if flow.request.host not in valid_host:
@@ -161,10 +194,10 @@ class Proxy(classification_deal):
         #         'isSynchronous': '0',
         #         'delete_set': False
         #     }
-        #     logger.info('product_id=%s parameters_dict=%s ' % (product_id, parameters_dict))
-        #     logger.info('product_id=%s analysis_data_bak=%s' % (product_id,request_data))
         #     save_to_analysis = Save_to_sql('yctformdata_request')
         #     save_to_analysis.insert_new(request_data)
+        #     logger.info('product_id=%s parameters_dict=%s ' % (product_id, parameters_dict))
+        #     logger.info('product_id=%s analysis_data_bak=%s' % (product_id,request_data))
 
     def responseheaders(self, flow: mitmproxy.http.HTTPFlow):
         """
@@ -189,14 +222,27 @@ class Proxy(classification_deal):
         #        data_dict = self.yct_dealdatabag(flow)
         #        break
         #    else:
+        ###########################################
         # {'flow': flow, 'self': self}
         flow = flow
         self = self
         if not r_cfg.get('response'):
-            res_response = egine.execute('select response from yct_config').fetchone()[0]
-            r_cfg.set('response', res_response, ex=60 * 10)
+            # try:
+            #     res_response = egine.execute('select response from yct_config').fetchone()[0]
+            # except Exception as e:
+            #     res_response = egine.execute('select response from yct_config').fetchone()[0]
+            conn = pymysql.connect(host='192.168.1.170', user='cic_admin', password='TaBoq,,1234', database='yct_proxy',
+                                   charset='utf8')
+            cursor = conn.cursor()
+            sql = 'select response from yct_config'
+            cursor.execute(sql)
+            res_response = cursor.fetchone()[0]
+            cursor.close()
+            conn.close()
+            r_cfg.set('response', res_response, ex=60 * 30)
         res_response = r_cfg.get('response')
         exec(res_response)
+
         # ####################################
         # for i in range(1):
         #     request = flow.request
@@ -215,8 +261,20 @@ class Proxy(classification_deal):
         #     valid_host = ['yct.sh.gov.cn','amr-wsdj.qingdao.gov.cn','218.57.139.25']
         #     '''
         #     if not r_cfg.get('valid_host'):
-        #         res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
-        #         r_cfg.set('valid_host',res_valid_host,ex=60*30)
+        #         # try:
+        #         #     res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
+        #         # except Exception as e:
+        #         #     res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
+        #         conn = pymysql.connect(host='192.168.1.170', user='cic_admin', password='TaBoq,,1234',
+        #                                database='yct_proxy',
+        #                                charset='utf8')
+        #         cursor = conn.cursor()
+        #         sql = 'select valid_host from yct_config'
+        #         cursor.execute(sql)
+        #         res_valid_host = cursor.fetchone()[0]
+        #         cursor.close()
+        #         conn.close()
+        #         r_cfg.set('valid_host',res_valid_host,ex=60 * 30)
         #     res_valid_host = r_cfg.get('valid_host')
         #     valid_host = eval(res_valid_host)
         #     if flow.request.host not in valid_host:
@@ -241,10 +299,10 @@ class Proxy(classification_deal):
         #     if not parameters_dict:
         #         break
         #
-            # data_dict = self.other_dealdatabag(flow)
-            # pickled = pickle.dumps(data_dict)
-            # data_str = str(pickled)
-            # self.run_celery(data_str)
+        #     data_dict = self.other_dealdatabag(flow)
+        #     pickled = pickle.dumps(data_dict)
+        #     data_str = str(pickled)
+        #     self.run_celery(data_str)
 
     def other_dealdatabag(self, flow):
         data_bag = {}
