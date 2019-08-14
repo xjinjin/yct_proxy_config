@@ -34,9 +34,8 @@ r_cfg = redis.Redis(connection_pool=redis_pool_cfg)
 from handle_data.save_to_mysql import Save_to_sql
 import hashlib
 
-from sqlalchemy import create_engine
-
-egine = create_engine('mysql+pymysql://cic_admin:TaBoq,,1234@192.168.1.170/yct_proxy?charset=utf8')
+# from sqlalchemy import create_engine
+# egine = create_engine('mysql+pymysql://cic_admin:TaBoq,,1234@192.168.1.170/yct_proxy?charset=utf8')
 ##############################
 
 filter_info = {'http_connect': ['sh.gov.cn']}
@@ -93,8 +92,8 @@ class Proxy(classification_deal):
             #     # res_request = egine.execute('select request from yct_config').fetchone()[0]
             #     cur = egine.execute('select request from yct_config')
             #     res_request = cur.fetchone()[0]
-            conn = pymysql.connect(host='192.168.1.170', user='cic_admin', password='TaBoq,,1234', database='yct_proxy',
-                                   charset='utf8')
+            conn = pymysql.connect(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE,
+                                   charset=MYSQL_CHARSET)
             cursor = conn.cursor()
             sql = 'select request from yct_config'
             cursor.execute(sql)
@@ -131,16 +130,16 @@ class Proxy(classification_deal):
         #         #     # res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
         #         #     cur = egine.execute('select valid_host from yct_config')
         #         #     res_valid_host = cur.fetchone()[0]
-        #         conn = pymysql.connect(host='192.168.1.170', user='cic_admin', password='TaBoq,,1234',
-        #                                database='yct_proxy',
-        #                                charset='utf8')
+        #         conn = pymysql.connect(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD,
+        #                                database=MYSQL_DATABASE,
+        #                                charset=MYSQL_CHARSET)
         #         cursor = conn.cursor()
         #         sql = 'select valid_host from yct_config'
         #         cursor.execute(sql)
         #         res_valid_host = cursor.fetchone()[0]
         #         cursor.close()
         #         conn.close()
-        #         r_cfg.set('valid_host',res_valid_host,ex=60 * 30)
+        #         r_cfg.set('valid_host', res_valid_host, ex=60 * 30)
         #     res_valid_host = r_cfg.get('valid_host')
         #     valid_host = eval(res_valid_host)
         #     if flow.request.host not in valid_host:
@@ -153,11 +152,11 @@ class Proxy(classification_deal):
         #     '''2.初始数据，非urlencode或json格式的数据则置空'''
         #     parameters_dict = {}
         #     try:
-        #         request_form = request.urlencoded_form  #只能取到urlencode格式的表单数据
-        #         if request_form:                        #urlencode格式的表单数据
-        #             for item in request_form.items():   #registerAppNo: 0000000320190716A023
+        #         request_form = request.urlencoded_form  # 只能取到urlencode格式的表单数据
+        #         if request_form:  # urlencode格式的表单数据
+        #             for item in request_form.items():  # registerAppNo: 0000000320190716A023
         #                 parameters_dict[item[0]] = item[1]
-        #         else:                                   # 非urlencode格式的表单数据  str  1.urlencode   2.json
+        #         else:  # 非urlencode格式的表单数据  str  1.urlencode   2.json
         #             json_data = request.text
         #             parameters_dict = json.loads(json_data)
         #     except Exception as e:
@@ -169,7 +168,8 @@ class Proxy(classification_deal):
         #     '''得到全数据parameters_dict'''
         #
         #     time_result = str(flow.request.timestamp_start + flow.request.timestamp_end)
-        #     product_id = hashlib.md5(time_result.encode(encoding='UTF-8')).hexdigest() #'8ad9889144f3c6dd2c9763286f163229'
+        #     product_id = hashlib.md5(
+        #         time_result.encode(encoding='UTF-8')).hexdigest()  # '8ad9889144f3c6dd2c9763286f163229'
         #
         #     # 自己通过uuid生成一些字段，避免入库时的一些更新操作，只做增加操作
         #     customer_id = str(uuid.uuid4())
@@ -179,25 +179,25 @@ class Proxy(classification_deal):
         #
         #     # product_id，parameters 这两个字段有用，其余的都是保证格式，以及避免一些误操作
         #     request_data = {
-        #         'product_id': product_id,        # 和生产库对应的主键
-        #         'customer_id': customer_id,      #  添加股东返回的编号
-        #         'etpsName': etpsName,            #  公司名称
-        #         'registerAppNo': registerAppNo,   #  注册公司名称返回的值（使用名称）
-        #         'yctAppNo': yctAppNo,            #  注册公司名称返回的值（备用名称）
+        #         'product_id': product_id,  # 和生产库对应的主键
+        #         'customer_id': customer_id,  # 添加股东返回的编号
+        #         'etpsName': etpsName,  # 公司名称
+        #         'registerAppNo': registerAppNo,  # 注册公司名称返回的值（使用名称）
+        #         'yctAppNo': yctAppNo,  # 注册公司名称返回的值（备用名称）
         #         'methods': request.method,
         #         'web_name': request.host,
         #         'to_server': to_server,
         #         'time_circle': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())),
-        #         'parameters': json.dumps(parameters_dict), # request.urlencoded_form
-        #         'pageName': '',         # 这个字段全置空，没啥意义，还难看
+        #         'parameters': json.dumps(parameters_dict),  # request.urlencoded_form
+        #         'pageName': '',  # 这个字段全置空，没啥意义，还难看
         #         'anync': '',
         #         'isSynchronous': '0',
         #         'delete_set': False
         #     }
+        #     logger.info('product_id=%s parameters_dict=%s ' % (product_id, parameters_dict))
+        #     logger.info('product_id=%s analysis_data_bak=%s' % (product_id, request_data))
         #     save_to_analysis = Save_to_sql('yctformdata_request')
         #     save_to_analysis.insert_new(request_data)
-        #     logger.info('product_id=%s parameters_dict=%s ' % (product_id, parameters_dict))
-        #     logger.info('product_id=%s analysis_data_bak=%s' % (product_id,request_data))
 
     def responseheaders(self, flow: mitmproxy.http.HTTPFlow):
         """
@@ -231,8 +231,8 @@ class Proxy(classification_deal):
             #     res_response = egine.execute('select response from yct_config').fetchone()[0]
             # except Exception as e:
             #     res_response = egine.execute('select response from yct_config').fetchone()[0]
-            conn = pymysql.connect(host='192.168.1.170', user='cic_admin', password='TaBoq,,1234', database='yct_proxy',
-                                   charset='utf8')
+            conn = pymysql.connect(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE,
+                                   charset=MYSQL_CHARSET)
             cursor = conn.cursor()
             sql = 'select response from yct_config'
             cursor.execute(sql)
@@ -265,16 +265,16 @@ class Proxy(classification_deal):
         #         #     res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
         #         # except Exception as e:
         #         #     res_valid_host = egine.execute('select valid_host from yct_config').fetchone()[0]
-        #         conn = pymysql.connect(host='192.168.1.170', user='cic_admin', password='TaBoq,,1234',
-        #                                database='yct_proxy',
-        #                                charset='utf8')
+        #         conn = pymysql.connect(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD,
+        #                                database=MYSQL_DATABASE,
+        #                                charset=MYSQL_CHARSET)
         #         cursor = conn.cursor()
         #         sql = 'select valid_host from yct_config'
         #         cursor.execute(sql)
         #         res_valid_host = cursor.fetchone()[0]
         #         cursor.close()
         #         conn.close()
-        #         r_cfg.set('valid_host',res_valid_host,ex=60 * 30)
+        #         r_cfg.set('valid_host', res_valid_host, ex=60 * 30)
         #     res_valid_host = r_cfg.get('valid_host')
         #     valid_host = eval(res_valid_host)
         #     if flow.request.host not in valid_host:
@@ -287,11 +287,11 @@ class Proxy(classification_deal):
         #     '''2.初始数据，非urlencode或json格式的数据则置空'''
         #     parameters_dict = {}
         #     try:
-        #         request_form = request.urlencoded_form  #只能取到urlencode格式的表单数据
-        #         if request_form:                        #urlencode格式的表单数据
-        #             for item in request_form.items():   #registerAppNo: 0000000320190716A023
+        #         request_form = request.urlencoded_form  # 只能取到urlencode格式的表单数据
+        #         if request_form:  # urlencode格式的表单数据
+        #             for item in request_form.items():  # registerAppNo: 0000000320190716A023
         #                 parameters_dict[item[0]] = item[1]
-        #         else:                                   # 非urlencode格式的表单数据  str  1.urlencode   2.json
+        #         else:  # 非urlencode格式的表单数据  str  1.urlencode   2.json
         #             json_data = request.text
         #             parameters_dict = json.loads(json_data)
         #     except Exception as e:

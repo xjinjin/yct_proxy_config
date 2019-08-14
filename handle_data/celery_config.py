@@ -17,14 +17,21 @@ from raven import Client
 cli = Client('https://6bc40853ade046ebb83077e956be04d2:d862bee828d848b6882ef875baedfe8c@sentry.cicjust.com//5')
 
 
-# SURL = "mysql+pymysql://cic_admin:TaBoq,,1234@192.168.1.170:3306/yct_proxy?charset=utf8&autocommit=true"
-SURL = "mysql+pymysql://cic_admin:159357a@192.168.10.11:3306/yct_proxy?charset=utf8&autocommit=true"
+SURL = "mysql+pymysql://cic_admin:TaBoq,,1234@192.168.1.170:3306/yct_proxy?charset=utf8&autocommit=true"
+# SURL = "mysql+pymysql://cic_admin:159357a@192.168.10.11:3306/yct_proxy?charset=utf8&autocommit=true"
 # SURL = "mysql+pymysql://root:GHys1234&,><@!@192.168.10.246:3306/yct_proxy?charset=utf8&autocommit=true"
 
 
 REDIS_HOST = 'aliyun_redis'
 # REDIS_HOST = '127.0.0.1'
 REDIS_PORT = 6379
+
+# host='192.168.1.170', user='cic_admin', password='TaBoq,,1234', database='yct_proxy',charset='utf8'
+MYSQL_HOST = '192.168.1.230'
+MYSQL_USER = 'root'
+MYSQL_PASSWORD = 'TaBoq,,1234'
+MYSQL_DATABASE = 'yct_proxy'
+MYSQL_CHARSET = 'utf8'
 
 
 # RABBITMQ_HOST = '127.0.0.1'
@@ -35,8 +42,8 @@ AA=2
 # 注意，celery4版本后，CELERY_BROKER_URL改为BROKER_URL
 from kombu import Queue, Exchange
 
-BROKER_URL = 'amqp://cic_admin:JYcxys@3030@{}:{}/yct'.format(RABBITMQ_HOST,RABBITMQ_PORT)
-# BROKER_URL = 'amqp://cic_admin:JYcxys@3030@{}:{}/xjj_test_yct'.format(RABBITMQ_HOST,RABBITMQ_PORT)
+# BROKER_URL = 'amqp://cic_admin:JYcxys@3030@{}:{}/yct'.format(RABBITMQ_HOST,RABBITMQ_PORT)
+BROKER_URL = 'amqp://cic_admin:JYcxys@3030@{}:{}/xjj_test_yct'.format(RABBITMQ_HOST,RABBITMQ_PORT)
 # BROKER_URL = 'amqp://cic_admin:JYcxys@3030@{}:{}/newprocy-yuanqu01'.format(RABBITMQ_HOST,RABBITMQ_PORT)
 # BROKER_URL = 'amqp://test:test@127.0.0.1:5672/test'
 
