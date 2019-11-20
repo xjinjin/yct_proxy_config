@@ -407,7 +407,11 @@ class Proxy(classification_deal):
             A client has connected to mitmproxy. Note that a connection can
             correspond to multiple HTTP requests.
         """
+        astr = layer.client_conn.address[0]   # ::ffff:127.0.0.1
+        astr0 = layer.client_conn.address        # ('::ffff:127.0.0.1', 52674, 0, 0)
 
+        print(astr)
+        print(astr0)
     def clientdisconnect(self, layer: mitmproxy.proxy.protocol.Layer):
         """
             A client has disconnected from mitmproxy.
