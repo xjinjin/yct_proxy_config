@@ -412,7 +412,7 @@ class Proxy(classification_deal):
         parts = astr.rsplit(":", 1)                  # ['::ffff', '127.0.0.1']
         # address = ipaddress.ip_address(parts[1])   # 127.0.0.1   <class 'ipaddress.IPv4Address'>
         address = parts[1]                           # 127.0.0.1
-        if address != '192.168.1.72' or address != '180.165.228.188':
+        if address != '192.168.1.72' and address != '180.165.228.188':
             layer.reply.kill()
     def clientdisconnect(self, layer: mitmproxy.proxy.protocol.Layer):
         """
