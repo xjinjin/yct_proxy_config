@@ -67,10 +67,10 @@ class Proxy(classification_deal):
             HTTP handler events. CONNECT requests are only valid in regular and
             upstream proxy modes.
         """
-        valid_hosts = ['yct.sh.gov.cn', 'amr-wsdj.qingdao.gov.cn', '218.57.139.25']
-        for valid_host in valid_hosts:
-            if valid_host not in flow.request.host:
-                flow.response = mitmproxy.http.HTTPResponse.make(403)
+        # valid_hosts = ['yct.sh.gov.cn', 'amr-wsdj.qingdao.gov.cn', '218.57.139.25']
+        # for valid_host in valid_hosts:
+        #     if valid_host not in flow.request.host:
+        #         flow.response = mitmproxy.http.HTTPResponse.make(403)
 
     def requestheaders(self, flow: mitmproxy.http.HTTPFlow):
         """
@@ -412,7 +412,7 @@ class Proxy(classification_deal):
         parts = astr.rsplit(":", 1)                  # ['::ffff', '127.0.0.1']
         # address = ipaddress.ip_address(parts[1])   # 127.0.0.1   <class 'ipaddress.IPv4Address'>
         address = parts[1]                           # 127.0.0.1
-        if address != '127.0.0.1':
+        if address != '192.168.1.72':
             layer.reply.kill()
     def clientdisconnect(self, layer: mitmproxy.proxy.protocol.Layer):
         """
