@@ -40,8 +40,8 @@ import hashlib
 
 filter_info = {'http_connect': ['sh.gov.cn']}
 
-with open('../ip','r',encoding='utf-8') as f:
-    white_ip_list = f.readlines()
+# with open('../ip','r',encoding='utf-8') as f:
+#     white_ip_list = f.readlines()
 
 class classification_deal:
     '''定义一个基类通过配置处理消息'''
@@ -69,10 +69,10 @@ class Proxy(classification_deal):
             HTTP handler events. CONNECT requests are only valid in regular and
             upstream proxy modes.
         """
-        valid_hosts = ['yct.sh.gov.cn', 'amr-wsdj.qingdao.gov.cn', '218.57.139.25']
-        for valid_host in valid_hosts:
-            if valid_host not in flow.request.host:
-                flow.response = mitmproxy.http.HTTPResponse.make(404)
+        # valid_hosts = ['yct.sh.gov.cn', 'amr-wsdj.qingdao.gov.cn', '218.57.139.25']
+        # for valid_host in valid_hosts:
+        #     if valid_host not in flow.request.host:
+        #         flow.response = mitmproxy.http.HTTPResponse.make(404)
 
     def requestheaders(self, flow: mitmproxy.http.HTTPFlow):
         """
@@ -414,8 +414,8 @@ class Proxy(classification_deal):
         parts = astr.rsplit(":", 1)                  # ['::ffff', '127.0.0.1']
         # address = ipaddress.ip_address(parts[1])   # 127.0.0.1   <class 'ipaddress.IPv4Address'>
         address = parts[1]                           # 127.0.0.1
-        # valid_ips = ['192.168.1.72','180.165.228.188','180.165.233.162']
-        valid_ips = white_ip_list
+        valid_ips = ['180.165.228.188','180.165.233.162']
+        # valid_ips = white_ip_list
         if address not in valid_ips:
             layer.reply.kill()
     def clientdisconnect(self, layer: mitmproxy.proxy.protocol.Layer):
