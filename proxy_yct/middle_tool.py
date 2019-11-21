@@ -16,6 +16,7 @@ import time
 import uuid
 from handle_data.main import handle_data
 import pymysql
+from proxy_yct.read_ip import white_ip_list
 
 ##############################
 from handle_data.tasks import handel_parameter, filter_step
@@ -39,9 +40,6 @@ import hashlib
 ##############################
 
 filter_info = {'http_connect': ['sh.gov.cn']}
-
-# with open('../ip','r',encoding='utf-8') as f:
-#     white_ip_list = f.readlines()
 
 class classification_deal:
     '''定义一个基类通过配置处理消息'''
@@ -414,8 +412,8 @@ class Proxy(classification_deal):
         parts = astr.rsplit(":", 1)                  # ['::ffff', '127.0.0.1']
         # address = ipaddress.ip_address(parts[1])   # 127.0.0.1   <class 'ipaddress.IPv4Address'>
         address = parts[1]                           # 127.0.0.1
-        valid_ips = ['180.165.228.188','180.165.233.162']
-        # valid_ips = white_ip_list
+        # valid_ips = ['180.165.228.188','180.165.233.162']
+        valid_ips = white_ip_list
         if address not in valid_ips:
             layer.reply.kill()
     def clientdisconnect(self, layer: mitmproxy.proxy.protocol.Layer):
