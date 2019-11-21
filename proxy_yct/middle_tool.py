@@ -414,6 +414,7 @@ class Proxy(classification_deal):
         address = parts[1]                           # 127.0.0.1
         # valid_ips = ['180.165.228.188','180.165.233.162']
         valid_ips = white_ip_list
+        # valid_ips.append('192.168.1.72')
         if address not in valid_ips:
             layer.reply.kill()
     def clientdisconnect(self, layer: mitmproxy.proxy.protocol.Layer):
