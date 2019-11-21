@@ -69,10 +69,10 @@ class Proxy(classification_deal):
             HTTP handler events. CONNECT requests are only valid in regular and
             upstream proxy modes.
         """
-        # valid_hosts = ['yct.sh.gov.cn', 'amr-wsdj.qingdao.gov.cn', '218.57.139.25']
-        # for valid_host in valid_hosts:
-        #     if valid_host not in flow.request.host:
-        #         flow.response = mitmproxy.http.HTTPResponse.make(403)
+        valid_hosts = ['yct.sh.gov.cn', 'amr-wsdj.qingdao.gov.cn', '218.57.139.25']
+        for valid_host in valid_hosts:
+            if valid_host not in flow.request.host:
+                flow.response = mitmproxy.http.HTTPResponse.make(404)
 
     def requestheaders(self, flow: mitmproxy.http.HTTPFlow):
         """
